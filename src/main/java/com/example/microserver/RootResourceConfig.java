@@ -12,8 +12,11 @@ import java.util.Map;
 import javax.ws.rs.Path;
 
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 import com.example.microserver.exception.UserNotFoundExceptionMapper;
+import com.example.microserver.filter.AuthFilter;
+import com.example.microserver.filter.CORSFilter;
 import com.example.microserver.model.BookBinder;
 import com.example.microserver.model.User;
 import com.example.microserver.model.UserBinder;
@@ -33,24 +36,27 @@ public class RootResourceConfig extends ResourceConfig {
     @Getter
     private final Map<Integer, User> data = new HashMap<>();
 
-    private void initData() throws NumberFormatException, IOException, URISyntaxException {
+    private void initData() throws IOException, URISyntaxException {
         val url = this.getClass().getClassLoader().getResource(DATA_PATH);
         val path = Paths.get(url.toURI());
         for (val line : Files.readAllLines(path, StandardCharsets.UTF_8)) {
-            val data = line.split(",");
-            val id = Integer.valueOf(data[0]);
-            val user = User.of(id, data[1], LocalDate.parse(data[2]));
+            val values = line.split(",");
+            val id = Integer.valueOf(values[0]);
+            val user = User.of(id, values[1], LocalDate.parse(values[2]));
             log.debug(user.toString());
             this.data.put(id, user);
         }
     }
 
-    public RootResourceConfig() throws NumberFormatException, IOException, URISyntaxException {
+    public RootResourceConfig() throws IOException, URISyntaxException {
         log.debug("initialize RootResourceConfig");
         this.initData();
 
         // common
         register(ObjectMapperProvider.class);
+        register(AuthFilter.class);
+        register(RolesAllowedDynamicFeature.class);
+        register(CORSFilter.class);
 
         // user rsource
         register(new UserBinder());

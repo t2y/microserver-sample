@@ -20,7 +20,7 @@ $ gradle run
 ### list
 
 ```bash
-$ curl -s localhost:8000/users | jq .
+$ curl -s -H 'Auth-Token: secret' localhost:8000/users | jq .
 ```
 
 ### create 
@@ -37,7 +37,7 @@ $ curl -X POST -s -H "Content-Type: application/json" -d '{"name": "sala", "birt
 ### retrieve
 
 ```
-$ curl -X GET -s localhost:8000/users/3 | jq .
+$ curl -X GET -H 'Auth-Token: secret' -s localhost:8000/users/3 | jq .
 {
   "name": "mary",
   "birthDay": "1998-04-05",
